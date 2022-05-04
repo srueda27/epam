@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/srueda27/epam/issues"
   },
-  "homepage": "https://github.com/srueda27/epam#readme"
+  "homepage": "https://github.com/srueda27/epam#readme",
+  "dependencies": {
+    "chalk": "2.4"
+  }
 }
