@@ -28,19 +28,26 @@ rl.on('line', answer => {
     process.exit(0);
   }
 
-  const valid_arr = utilsService.validate(answer);
+  const validArr = utilsService.validateAnswer(answer);
 
-  if (!valid_arr) {
+  if (!validArr) {
     console.log(chalk.red(usageText));
   } else {
-    
-    if(!initial_folder) {
+
+    if (!initial_folder) {
       initial_folder = utilsService.initFolder();
     }
 
-    utilsService.proccessCommands(initial_folder, valid_arr);
+    const response = utilsService.proccessCommands(initial_folder, validArr);
+    let message = response.message;
+
+    if (response.success) {
+      console.log(chalk.blue(message))
+    } else {
+      console.log(chalk.red(message))
+    }
   }
-  
+
   rl.prompt();
 })
   .on('close', () => {

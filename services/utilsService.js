@@ -1,10 +1,11 @@
 const fs = require('fs');
+const { moveSync } = require('fs-extra');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 const validCommands = ['CREATE', 'MOVE', 'LIST', 'DELETE'];
 
-function validate(answer) {
+function validateAnswer(answer) {
   const arr = answer.split(' ');
 
   if (arr.length > 3) {
@@ -40,28 +41,89 @@ function validate(answer) {
   }
 }
 
-function proccessCommands(initialFolder, arr) {
-  const command = arr[0];
+function proccessCommands(initialFolder, commandArr) {
+  const command = commandArr[0];
 
   switch (command) {
     case 'CREATE':
-      const folderPath = path.join(initialFolder, arr[1]);
-      const newFolder = fs.mkdirSync(folderPath, { recursive: true });
-
-      if (newFolder) {
-        return arr[1];
-      } 
-
-      break;
+      return createFolder(initialFolder, commandArr[1]);
     case 'MOVE':
-      break;
+      return moveFolder(initialFolder, commandArr[1], commandArr[2])
     case 'LIST':
-      const directory = getDirectories(initialFolder);
-      const directoryText = printDirectory(directory);
-
-      return directoryText;
+      return listDirectory(initialFolder)
     case 'DELETE':
-      break;
+      return deleteFolder(initialFolder, commandArr[1]);
+  }
+}
+
+function listDirectory(initialFolder) {
+  const directory = getDirectories(initialFolder);
+  const directoryText = printDirectory(directory);
+
+  return { success: true, message: directoryText };
+}
+
+function moveFolder(initialFolder, oldFolderName, parentFolderName) {
+  const oldPath = path.join(initialFolder, oldFolderName);
+  const parentPath = path.join(initialFolder, parentFolderName);
+
+  if (!fs.existsSync(oldPath)) {
+    return { success: false, message: `${oldPath}` };
+  }
+
+  if (!fs.existsSync(parentPath)) {
+    return { success: false, message: `${newPath}` };
+  }
+
+  try {
+    fs.renameSync(oldPath, path.join(parentPath, oldFolderName));
+    return { success: true, message: 'Move successfully' }
+  } catch (error) {
+    return { success: false, message: 'Move unsuccessfully' }
+  }
+}
+
+function deleteFolder(initialFolder, pathName) {
+  const deleteFolderPath = path.join(initialFolder, pathName);
+
+  try {
+    fs.rmSync(deleteFolderPath, { recursive: true });
+
+    return { success: true, message: 'Folder deleted succesfully' };
+  } catch (error) {
+    let invalidFolder = getInvalidFolder(initialFolder, pathName);
+
+    return { success: false, message: `Cannot delete ${pathName} - ${invalidFolder} does not exist` };
+  }
+}
+
+function createFolder(initialFolder, pathName) {
+  const newFolderPath = path.join(initialFolder, pathName);
+
+  try {
+    const newFolder = fs.mkdirSync(newFolderPath, { recursive: true });
+
+    if (newFolder) {
+      return { success: true, message: `New folder created: ${pathName}` };
+    }
+  } catch (error) {
+    return { success: false, message: 'Please do not insert special characters' };
+  }
+}
+
+function getInvalidFolder(initialFolder, folderName) {
+  if (!fs.existsSync(path.join(initialFolder, folderName))) {
+    return folderName;
+  }
+
+  const invalidFolderArr = folderName.split('/');
+  for (let i = 0; i < invalidFolderArr.length; i++) {
+    const folder = invalidFolderArr.slice(0, i).join('/');
+    const validateFolder = path.join(initialFolder, folder);
+
+    if (!fs.existsSync(validateFolder)) {
+      return folder;
+    }
   }
 }
 
@@ -104,7 +166,7 @@ function initFolder() {
 }
 
 module.exports = {
-  validate,
+  validateAnswer,
   initFolder,
   proccessCommands
 }
