@@ -8,7 +8,7 @@ Command line directory app
 npm install
 ```
 
-## Available Commands
+### Commands
 
 ```
 CREATE 'folder_name'
