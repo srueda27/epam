@@ -28,23 +28,30 @@ rl.on('line', answer => {
     process.exit(0);
   }
 
-  const validArr = utilsService.validateAnswer(answer);
+  const valid = utilsService.validateAnswer(answer);
 
-  if (!validArr) {
-    console.log(chalk.red(usageText));
+  if (!valid.success) {
+    console.log(chalk.red(valid.message));
+    console.log(chalk.white(usageText));
   } else {
 
     if (!initial_folder) {
-      initial_folder = utilsService.initFolder();
+      const initFolder = utilsService.initFolder();
+
+      if (initFolder.success) {
+        initial_folder = initFolder.message;
+      } else {
+        console.log(chalk.red(initFolder.message));
+      }
     }
 
-    const response = utilsService.proccessCommands(initial_folder, validArr);
-    let message = response.message;
+    const response = utilsService.proccessCommands(initial_folder, valid.message);
 
     if (response.success) {
-      console.log(chalk.blue(message))
+      console.log([response.message]);
+      console.log(chalk.blue(response.message))
     } else {
-      console.log(chalk.red(message))
+      console.log(chalk.red(response.message))
     }
   }
 

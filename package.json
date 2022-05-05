@@ -4,6 +4,7 @@
   "description": "Command line directory app",
   "main": "directories.js",
   "scripts": {
+    "test-watch": "jest --watchAll --detectOpenHandles",
     "watch": "nodemon directories.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,10 +20,10 @@
   "homepage": "https://github.com/srueda27/epam#readme",
   "dependencies": {
     "chalk": "2.4",
-    "fs-extra": "^10.1.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "jest": "^28.0.3",
     "nodemon": "^2.0.16"
   }
 }

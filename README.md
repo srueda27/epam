@@ -48,3 +48,8 @@ The output would be:
 ```
 node directories.js
 ```
+
+## Run tests
+```
+npm run watch
+```

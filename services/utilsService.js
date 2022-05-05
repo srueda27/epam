@@ -1,43 +1,40 @@
 const fs = require('fs');
-const { moveSync } = require('fs-extra');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 const validCommands = ['CREATE', 'MOVE', 'LIST', 'DELETE'];
 
 function validateAnswer(answer) {
-  const arr = answer.split(' ');
+  const arr = answer.trim().split(' ');
 
   if (arr.length > 3) {
-    return false
+    return { success: false, message: 'More than 3 parameters' };
   }
 
   if (validCommands.indexOf(arr[0]) == -1) {
-    return false
+    return { success: false, message: 'Not a valid command' };
   }
 
   switch (arr[0]) {
     case 'CREATE':
     case 'DELETE':
       if (arr.length != 2) {
-        return false
+        return { success: false, message: 'Needs only 1 folder_name' };
       } else {
-        return arr;
+        return { success: true, message: arr };
       }
     case 'MOVE':
       if (arr.length != 3) {
-        return false
+        return { success: false, message: 'Needs both folder_to_move and parent_folder' };
       } else {
-        return arr;
+        return { success: true, message: arr };
       }
     case 'LIST':
       if (arr.length != 1) {
-        return false
+        return { success: false, message: 'Only LIST command' };
       } else {
-        return arr;
+        return { success: true, message: arr };
       }
-    default:
-      return false;
   }
 }
 
@@ -162,7 +159,12 @@ function printDirectory(directory) {
 
 function initFolder() {
   const folderName = path.join(__dirname.split('\\', 4).join('\\'), uuidv4());
-  return fs.mkdirSync(folderName, { recursive: true });
+
+  try {
+    return { success: true, message: fs.mkdirSync(folderName, { recursive: true }) };
+  } catch (error) {
+    return { success: false, message: 'Unable to create folder' };
+  }
 }
 
 module.exports = {
