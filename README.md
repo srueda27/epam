@@ -39,14 +39,20 @@ parent_folder/folder_name
 CREATE parent_folder/second_child_folder 
 
 The output would be:
-
+```
   parent_folder
     child_folder
     second_child_folder
+```
 
 ## How to run the app
 ```
 node directories.js
+```
+
+## How to run the fruits example
+```
+node fruits.js
 ```
 
 ## Run tests

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { copySync } = require('fs-extra');
 const { v4: uuidv4 } = require('uuid');
 
 const validCommands = ['CREATE', 'MOVE', 'LIST', 'DELETE'];
@@ -45,9 +46,9 @@ function proccessCommands(initialFolder, commandArr) {
     case 'CREATE':
       return createFolder(initialFolder, commandArr[1]);
     case 'MOVE':
-      return moveFolder(initialFolder, commandArr[1], commandArr[2])
+      return moveFolder(initialFolder, commandArr[1], commandArr[2]);
     case 'LIST':
-      return listDirectory(initialFolder)
+      return listDirectory(initialFolder);
     case 'DELETE':
       return deleteFolder(initialFolder, commandArr[1]);
   }
@@ -65,15 +66,19 @@ function moveFolder(initialFolder, oldFolderName, parentFolderName) {
   const parentPath = path.join(initialFolder, parentFolderName);
 
   if (!fs.existsSync(oldPath)) {
-    return { success: false, message: `${oldPath}` };
+    return { success: false, message: `No folder ${oldFolderName}` };
   }
 
   if (!fs.existsSync(parentPath)) {
-    return { success: false, message: `${newPath}` };
+    return { success: false, message: `No folder ${parentFolderName}` };
   }
 
   try {
-    fs.renameSync(oldPath, path.join(parentPath, oldFolderName));
+    copySync(oldPath, path.join(parentPath, oldFolderName.split('/').slice(-1).join('')), { overwrite: true });
+    
+    const deleted = deleteFolder(initialFolder, oldFolderName);
+    if(!deleted) throw new Error;
+
     return { success: true, message: 'Move successfully' }
   } catch (error) {
     return { success: false, message: 'Move unsuccessfully' }

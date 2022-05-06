@@ -48,7 +48,6 @@ rl.on('line', answer => {
     const response = utilsService.proccessCommands(initial_folder, valid.message);
 
     if (response.success) {
-      console.log([response.message]);
       console.log(chalk.blue(response.message))
     } else {
       console.log(chalk.red(response.message))

@@ -70,15 +70,15 @@ describe('Testing commands with invalid parameters', () => {
 });
 
 describe('Testing commands with valid parameters', () => {
-  const initFolder = utilsService.initFolder();
-  const initialFolder = initFolder.message;
-  
   test(`CREATE command should create a new folder`, () => {
-    const answer = 'CREATE parameter'
+    const initFolder = utilsService.initFolder();
+    const initialFolder = initFolder.message;
+    
+    const answer = 'CREATE folder'
     const valid = utilsService.validateAnswer(answer);
     const response = utilsService.proccessCommands(initialFolder, valid.message);
 
-    const folder = path.join(initialFolder.split('\\').join('/'), 'parameter');
+    const folder = path.join(initialFolder.split('\\').join('/'), 'folder');
     const created = fs.existsSync(folder);
     
     expect(created).toBeTruthy();
@@ -86,6 +86,9 @@ describe('Testing commands with valid parameters', () => {
   });
 
   test(`DELETE command should delete a folder`, () => {
+    const initFolder = utilsService.initFolder();
+    const initialFolder = initFolder.message;
+    
     const createMessage = 'CREATE parameter';
     let valid = utilsService.validateAnswer(createMessage);
     utilsService.proccessCommands(initialFolder, valid.message);
@@ -101,23 +104,10 @@ describe('Testing commands with valid parameters', () => {
     expect(response.success).toBeTruthy();
   });
 
-  /* test(`DELETE command should delete a folder`, () => {
-    const createMessage = 'CREATE parameter';
-    let valid = utilsService.validateAnswer(createMessage);
-    utilsService.proccessCommands(initialFolder, valid.message);
-
-    const deleteMessage = 'DELETE parameter';
-    valid = utilsService.validateAnswer(deleteMessage);
-    const response = utilsService.proccessCommands(initialFolder, valid.message);
-
-    const folder = path.join(initialFolder.split('\\').join('/'), 'parameter');
-    const deleted = !fs.existsSync(folder);
-    
-    expect(deleted).toBeTruthy();
-    expect(response.success).toBeTruthy();
-  }); */
-
   test(`LIST command should list the complete directory tree`, () => {
+    const initFolder = utilsService.initFolder();
+    const initialFolder = initFolder.message;
+    
     let createMessage = 'CREATE parent';
     let valid = utilsService.validateAnswer(createMessage);
     utilsService.proccessCommands(initialFolder, valid.message);
@@ -139,6 +129,33 @@ describe('Testing commands with valid parameters', () => {
     
     expect(exists).toBeTruthy();
     expect(response.message).toBe('Directory Tree\n\tchild\n\tparent\n\t\tchild');
+    expect(response.success).toBeTruthy();
+  });
+  
+  test(`MOVE command should move first folder into the second one`, () => {
+    const initFolder = utilsService.initFolder();
+    const initialFolder = initFolder.message;
+    
+    let createMessage = 'CREATE parent_folder';
+    let valid = utilsService.validateAnswer(createMessage);
+    utilsService.proccessCommands(initialFolder, valid.message);
+
+    createMessage = 'CREATE moving_child';
+    valid = utilsService.validateAnswer(createMessage);
+    utilsService.proccessCommands(initialFolder, valid.message);
+
+    const moveMessage = 'MOVE moving_child parent_folder';
+    valid = utilsService.validateAnswer(moveMessage);
+    const response = utilsService.proccessCommands(initialFolder, valid.message);
+
+    const newFolder = path.join(initialFolder.split('\\').join('/'), 'parent_folder', 'moving_child');
+    const created = fs.existsSync(newFolder);
+
+    const oldFolder = path.join(initialFolder.split('\\').join('/'), 'moving_child');
+    const deleted = !fs.existsSync(oldFolder);
+    
+    expect(created).toBeTruthy();
+    expect(deleted).toBeTruthy();
     expect(response.success).toBeTruthy();
   });
 
