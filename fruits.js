@@ -1,3 +1,4 @@
+const chalk = require('chalk');
 const utilsService = require('./services/utilsService');
 
 function testApp() {
@@ -67,6 +68,8 @@ function testApp() {
   message = 'LIST';
   valid = utilsService.validateAnswer(message);
   console.log(utilsService.proccessCommands(initialFolder, valid.message).message);
+
+  console.log(`${chalk.blue('You can find the final folder inside')} ${chalk.green(initialFolder)}`)
 }
 
 testApp();

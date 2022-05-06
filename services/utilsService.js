@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { copySync } = require('fs-extra');
 const { v4: uuidv4 } = require('uuid');
 
 const validCommands = ['CREATE', 'MOVE', 'LIST', 'DELETE'];
@@ -73,16 +72,23 @@ function moveFolder(initialFolder, oldFolderName, parentFolderName) {
     return { success: false, message: `No folder ${parentFolderName}` };
   }
 
-  try {
-    copySync(oldPath, path.join(parentPath, oldFolderName.split('/').slice(-1).join('')), { overwrite: true });
-    
-    const deleted = deleteFolder(initialFolder, oldFolderName);
-    if(!deleted) throw new Error;
+  const newFolder = listDirectory(oldPath).message.replace('Directory Tree', '').replace(/(?:\t\n|\t|\n)/g, '/');
 
-    return { success: true, message: 'Move successfully' }
-  } catch (error) {
-    return { success: false, message: 'Move unsuccessfully' }
+  let created;
+  if (newFolder) {
+    created = createFolder(parentPath, `${oldFolderName}/${newFolder}`);
+  } else {
+    created = createFolder(parentPath, oldFolderName.split('/').slice(-1).join('/'));
   }
+
+  if (created.success) {
+    const deleted = deleteFolder(initialFolder, oldFolderName);
+    if (deleted.success) {
+      return { success: true, message: 'Move successfully' };
+    }
+  }
+
+  return { success: false, message: 'Move unsuccessfully' };
 }
 
 function deleteFolder(initialFolder, pathName) {
