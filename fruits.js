@@ -3,7 +3,7 @@ const utilsService = require('./services/utilsService');
 
 function testApp() {
   const initFolder = utilsService.initFolder();
-  const initialFolder = initFolder.message;
+    const initialFolder = initFolder.folder;
 
   let message = 'CREATE fruits';
   let valid = utilsService.validateAnswer(message);
@@ -68,8 +68,6 @@ function testApp() {
   message = 'LIST';
   valid = utilsService.validateAnswer(message);
   console.log(utilsService.proccessCommands(initialFolder, valid.message).message);
-
-  console.log(`${chalk.blue('You can find the final folder inside')} ${chalk.green(initialFolder)}`)
 }
 
 testApp();
