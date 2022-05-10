@@ -53,7 +53,6 @@ rl.on('line', answer => {
     }
 
     const response = utilsService.proccessCommands(initial_folder, valid.message);
-    initial_folder = response.mainFolder;
 
     switch (response.operation) {
       case 'create':

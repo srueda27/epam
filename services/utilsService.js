@@ -40,23 +40,22 @@ function validateAnswer(answer) {
 }
 
 function proccessCommands(initialFolder, commandArr) {
-  const rootDirectory = JSON.parse(JSON.stringify(initialFolder));
   const command = commandArr[0];
   let response;
 
   switch (command) {
     case 'CREATE':
-      response = manageCreate(rootDirectory, commandArr[1]);
-      return { mainFolder: response.mainFolder, operation: 'create', message: `New folder created: ${response.folderPath}` };
+      response = manageCreate(initialFolder, commandArr[1]);
+      return { operation: 'create', message: `New folder created: ${response.folderPath}` };
     case 'LIST':
-      const list = new Directory().toList.apply(rootDirectory);
-      return { mainFolder: rootDirectory, operation: 'list', message: list };
+      const list = initialFolder.toList();
+      return { operation: 'list', message: list };
     case 'DELETE':
       response = deleteFolder(initialFolder, commandArr[1]);
       if (!response.success) {
-        return { success: response.success, mainFolder: response.mainFolder, operation: 'delete', message: response.message };
+        return { success: response.success, operation: 'delete', message: response.message };
       } else {
-        return { success: response.success, mainFolder: response.mainFolder, operation: 'delete', message: `Folder deleted succesfully: ${response.folderPath}` };
+        return { success: response.success, operation: 'delete', message: `Folder deleted succesfully: ${response.folderPath}` };
       }
     case 'MOVE':
       return moveFolder(initialFolder, commandArr[1], commandArr[2]);
@@ -89,7 +88,7 @@ function manageCreate(mainFolder, folderName) {
     folderPath = folderName;
   }
 
-  return { mainFolder, folderPath };
+  return { folderPath };
 }
 
 function createFolders(nameArr) {
@@ -150,14 +149,14 @@ function deleteFolder(initialFolder, pathName) {
   const nameArr = pathName.split('/');
 
   if (initialFolder.folders.findIndex(folder => folder.name == nameArr[0]) == -1) {
-    return { success: false, mainFolder: initialFolder, message: `Folder ${pathName} doesn't exists` };
+    return { success: false, message: `Folder ${pathName} doesn't exists` };
   }
 
   if (nameArr.length == 1) {
     const deleteIdx = initialFolder.folders.findIndex(folder => folder.name == nameArr[0]);
-    initialFolder.folders.splice(deleteIdx, 1);
+    initialFolder.deleteFolder(deleteIdx);
 
-    return { success: true, mainFolder: initialFolder, folderPath: pathName };
+    return { success: true, folderPath: pathName };
   }
 
   let nextFolder = initialFolder;
@@ -168,7 +167,7 @@ function deleteFolder(initialFolder, pathName) {
     const found = nextFolder.folders.findIndex(folder => folder.name == folderName);
 
     if ((i == nameArr.length - 1) && found != -1) {
-      nextFolder.folders.splice(found, 1);
+      nextFolder.deleteFolder(found);
       deleted = true;
       break;
     }
@@ -179,9 +178,9 @@ function deleteFolder(initialFolder, pathName) {
   }
 
   if (deleted) {
-    return { success: true, mainFolder: initialFolder, folderPath: pathName };
+    return { success: true, folderPath: pathName };
   } else {
-    return { success: false, mainFolder: initialFolder, message: `Folder ${pathName} doesn't exists` };
+    return { success: false, message: `Folder ${pathName} doesn't exists` };
   }
 }
 

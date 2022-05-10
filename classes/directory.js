@@ -27,6 +27,11 @@ class Directory {
 
     return string;
   }
+
+  deleteFolder(deleteIdx) {
+    this.folders.splice(deleteIdx, 1);
+    return this;
+  }
 }
 
 module.exports = {
