@@ -22,7 +22,7 @@ class Directory {
     for (let i = 0; i < this.folders.length; i++) {
       const folder = this.folders[i];
 
-      string += '\n' + new Directory().toList.apply(folder, [newDepth]);
+      string += '\n' + folder.toList(newDepth);
     }
 
     return string;

@@ -62,14 +62,13 @@ rl.on('line', answer => {
         console.log(response.message);
         break;
       case 'delete':
+      case 'move':
         if (response.success) {
           console.log(chalk.green(response.message));
         } else {
           console.log(chalk.red(response.message));
         }
         break;
-      case 'move':
-        console.log(chalk.blue(response.message));
     }
   }
 

@@ -46,7 +46,7 @@ function proccessCommands(initialFolder, commandArr) {
   switch (command) {
     case 'CREATE':
       response = manageCreate(initialFolder, commandArr[1]);
-      return { operation: 'create', message: `New folder created: ${response.folderPath}` };
+      return { operation: 'create', message: `New folder created: ${commandArr[1]}` };
     case 'LIST':
       const list = initialFolder.toList();
       return { operation: 'list', message: list };
@@ -58,7 +58,33 @@ function proccessCommands(initialFolder, commandArr) {
         return { success: response.success, operation: 'delete', message: `Folder deleted succesfully: ${response.folderPath}` };
       }
     case 'MOVE':
-      return moveFolder(initialFolder, commandArr[1], commandArr[2]);
+      response = moveFolder(initialFolder, commandArr[1], commandArr[2]);
+      if (!response.success) {
+        return { success: response.success, operation: 'move', message: response.message };
+      } else {
+        return { success: response.success, operation: 'move', message: `Folder ${commandArr[1]} moved succesfully into ${commandArr[2]}` };
+      }
+  }
+}
+
+function moveFolder(initialFolder, oldFolderName, parentFolderName) {
+  const oldFolder = findFolder(initialFolder, oldFolderName);
+  if (!oldFolder) {
+    return { success: false, message: `Folder ${oldFolderName} doesn't exists` };
+  }
+
+  const newFolder = findFolder(initialFolder, parentFolderName);
+  if (!newFolder) {
+    return { success: false, message: `Folder ${parentFolderName} doesn't exists` };
+  }
+
+  const response = deleteFolder(initialFolder, oldFolderName);
+
+  if (response.success) {
+    newFolder.folders.push(oldFolder);
+    return { success: true }
+  } else {
+    return response
   }
 }
 
@@ -67,7 +93,6 @@ function manageCreate(mainFolder, folderName) {
 
   let found;
   let newFolder;
-  let folderPath;
 
   for (let i = 0; i < nameArr.length; i++) {
     const folder = nameArr[i];
@@ -85,10 +110,7 @@ function manageCreate(mainFolder, folderName) {
   if (found == -1) {
     newFolder = createFolders(nameArr);
     mainFolder.folders.push(newFolder);
-    folderPath = folderName;
   }
-
-  return { folderPath };
 }
 
 function createFolders(nameArr) {
@@ -112,37 +134,6 @@ function createFolders(nameArr) {
   }
 
   return rootDirectory;
-}
-
-function moveFolder(initialFolder, oldFolderName, parentFolderName) {
-  const oldPath = path.join(initialFolder, oldFolderName);
-  const parentPath = path.join(initialFolder, parentFolderName);
-
-  if (!fs.existsSync(oldPath)) {
-    return { success: false, message: `No folder ${oldFolderName}` };
-  }
-
-  if (!fs.existsSync(parentPath)) {
-    return { success: false, message: `No folder ${parentFolderName}` };
-  }
-
-  const newFolder = listDirectory(oldPath).message.replace('Directory Tree', '').replace(/(?:\t\n|\t|\n)/g, '/');
-
-  let created;
-  if (newFolder) {
-    created = createFolder(parentPath, `${oldFolderName}/${newFolder}`);
-  } else {
-    created = createFolder(parentPath, oldFolderName.split('/').slice(-1).join('/'));
-  }
-
-  if (created.success) {
-    const deleted = deleteFolder(initialFolder, oldFolderName);
-    if (deleted.success) {
-      return { success: true, message: 'Move successfully' };
-    }
-  }
-
-  return { success: false, message: 'Move unsuccessfully' };
 }
 
 function deleteFolder(initialFolder, pathName) {
@@ -182,6 +173,26 @@ function deleteFolder(initialFolder, pathName) {
   } else {
     return { success: false, message: `Folder ${pathName} doesn't exists` };
   }
+}
+
+function findFolder(initialFolder, folderName) {
+  const nameArr = folderName.split('/');
+  let nextFolder = initialFolder;
+
+  for (let i = 0; i < nameArr.length; i++) {
+    const folderName = nameArr[i];
+    const found = nextFolder.folders.findIndex(folder => folder.name == folderName);
+
+    if ((i == nameArr.length - 1) && found != -1) {
+      return nextFolder.folders[found];
+    }
+
+    if (found != -1) {
+      nextFolder = nextFolder.folders[found];
+    }
+  }
+
+  return;
 }
 
 function initFolder() {
