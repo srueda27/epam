@@ -1,7 +1,9 @@
+'use strict';
 const readline = require('readline');
 const chalk = require('chalk');
 
 const utilsService = require('./services/utilsService');
+const { Directory } = require('./classes/directory');
 
 const rl = readline.createInterface(process.stdin, process.stdout);
 
@@ -18,7 +20,7 @@ usage:
   DELETE <folder_name>:                   used to delete a folder
   MOVE <folder_name> <parent_folder>:     used to move a folder into a parent folder
 `;
-let initial_folder = '';
+let initial_folder;
 
 rl.setPrompt(insertCommandText);
 rl.prompt();
@@ -38,19 +40,37 @@ rl.on('line', answer => {
     if (!initial_folder) {
       const initFolder = utilsService.initFolder();
 
-      if (initFolder.success) {
-        initial_folder = initFolder.message;
-      } else {
-        console.log(chalk.red(initFolder.message));
-      }
+      initial_folder = initFolder.folder;
+
+
+      const f = new Directory("fruits", "folder");
+      const g = new Directory("grains", "folder");
+      const v = new Directory("vegetables", "folder");
+
+      initial_folder.folders.push(f);
+      initial_folder.folders.push(g);
+      initial_folder.folders.push(v);
     }
 
     const response = utilsService.proccessCommands(initial_folder, valid.message);
+    initial_folder = response.mainFolder;
 
-    if (response.success) {
-      console.log(chalk.blue(response.message))
-    } else {
-      console.log(chalk.red(response.message))
+    switch (response.operation) {
+      case 'create':
+        console.log(chalk.green(response.message));
+        break;
+      case 'list':
+        console.log(response.message);
+        break;
+      case 'delete':
+        if (response.success) {
+          console.log(chalk.green(response.message));
+        } else {
+          console.log(chalk.red(response.message));
+        }
+        break;
+      case 'move':
+        console.log(chalk.blue(response.message));
     }
   }
 
