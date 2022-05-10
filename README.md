@@ -57,5 +57,5 @@ node fruits.js
 
 ## Run tests
 ```
-npm run watch
+npm run test-watch
 ```
