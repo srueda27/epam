@@ -1,5 +1,3 @@
-const fs = require('fs');
-const path = require('path');
 const utilsService = require('./utilsService');
 
 describe('Test Basic Inputs', () => {
@@ -43,7 +41,7 @@ describe('Testing commands with invalid parameters', () => {
     expect(response.success).toBeFalsy();
     expect(response.message).toBe('Only LIST command');
   });
-  
+
   test(`CREATE works with only 1 parameter`, () => {
     const answer = 'CREATE parameter parameter'
     const response = utilsService.validateAnswer(answer);
@@ -72,23 +70,21 @@ describe('Testing commands with invalid parameters', () => {
 describe('Testing commands with valid parameters', () => {
   test(`CREATE command should create a new folder`, () => {
     const initFolder = utilsService.initFolder();
-    const initialFolder = initFolder.message;
-    
-    const answer = 'CREATE folder'
+    const initialFolder = initFolder.folder;
+
+    const answer = 'CREATE folder';
     const valid = utilsService.validateAnswer(answer);
     const response = utilsService.proccessCommands(initialFolder, valid.message);
 
-    const folder = path.join(initialFolder.split('\\').join('/'), 'folder');
-    const created = fs.existsSync(folder);
-    
-    expect(created).toBeTruthy();
-    expect(response.success).toBeTruthy();
+    const list = initialFolder.toList();
+    expect(list).toBe(`main_folder\n\tfolder`);
+    expect(response.message).toBe('New folder created: folder');
   });
 
   test(`DELETE command should delete a folder`, () => {
     const initFolder = utilsService.initFolder();
-    const initialFolder = initFolder.message;
-    
+    const initialFolder = initFolder.folder;
+
     const createMessage = 'CREATE parameter';
     let valid = utilsService.validateAnswer(createMessage);
     utilsService.proccessCommands(initialFolder, valid.message);
@@ -97,17 +93,17 @@ describe('Testing commands with valid parameters', () => {
     valid = utilsService.validateAnswer(deleteMessage);
     const response = utilsService.proccessCommands(initialFolder, valid.message);
 
-    const folder = path.join(initialFolder.split('\\').join('/'), 'parameter');
-    const deleted = !fs.existsSync(folder);
-    
-    expect(deleted).toBeTruthy();
+    const list = initialFolder.toList();
+    expect(list).toBe(`main_folder`);
+
     expect(response.success).toBeTruthy();
+    expect(response.message).toBe('Folder deleted succesfully: parameter');
   });
 
   test(`LIST command should list the complete directory tree`, () => {
     const initFolder = utilsService.initFolder();
-    const initialFolder = initFolder.message;
-    
+    const initialFolder = initFolder.folder;
+
     let createMessage = 'CREATE parent';
     let valid = utilsService.validateAnswer(createMessage);
     utilsService.proccessCommands(initialFolder, valid.message);
@@ -124,18 +120,13 @@ describe('Testing commands with valid parameters', () => {
     valid = utilsService.validateAnswer(listMessage);
     const response = utilsService.proccessCommands(initialFolder, valid.message);
 
-    const folderParent = path.join(initialFolder.split('\\').join('/'), 'parent');
-    const exists = fs.existsSync(folderParent);
-    
-    expect(exists).toBeTruthy();
-    expect(response.message).toBe('Directory Tree\n\tchild\n\tparent\n\t\tchild');
-    expect(response.success).toBeTruthy();
+    expect(response.message).toBe('main_folder\n\tparent\n\t\tchild\n\tchild');
   });
-  
+
   test(`MOVE command should move first folder into the second one`, () => {
     const initFolder = utilsService.initFolder();
-    const initialFolder = initFolder.message;
-    
+    const initialFolder = initFolder.folder;
+
     let createMessage = 'CREATE parent_folder';
     let valid = utilsService.validateAnswer(createMessage);
     utilsService.proccessCommands(initialFolder, valid.message);
@@ -146,17 +137,14 @@ describe('Testing commands with valid parameters', () => {
 
     const moveMessage = 'MOVE moving_child parent_folder';
     valid = utilsService.validateAnswer(moveMessage);
+    const moved = utilsService.proccessCommands(initialFolder, valid.message);
+
+    const listMessage = 'LIST';
+    valid = utilsService.validateAnswer(listMessage);
     const response = utilsService.proccessCommands(initialFolder, valid.message);
 
-    const newFolder = path.join(initialFolder.split('\\').join('/'), 'parent_folder', 'moving_child');
-    const created = fs.existsSync(newFolder);
-
-    const oldFolder = path.join(initialFolder.split('\\').join('/'), 'moving_child');
-    const deleted = !fs.existsSync(oldFolder);
-    
-    expect(created).toBeTruthy();
-    expect(deleted).toBeTruthy();
-    expect(response.success).toBeTruthy();
+    expect(moved.success).toBeTruthy();
+    expect(response.message).toBe('main_folder\n\tparent_folder\n\t\tmoving_child');
   });
 
 });

@@ -41,15 +41,6 @@ rl.on('line', answer => {
       const initFolder = utilsService.initFolder();
 
       initial_folder = initFolder.folder;
-
-
-      const f = new Directory("fruits", "folder");
-      const g = new Directory("grains", "folder");
-      const v = new Directory("vegetables", "folder");
-
-      initial_folder.folders.push(f);
-      initial_folder.folders.push(g);
-      initial_folder.folders.push(v);
     }
 
     const response = utilsService.proccessCommands(initial_folder, valid.message);
